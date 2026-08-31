@@ -1,0 +1,2039 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Birthday</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: black;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+
+        /* =====================================================
+           INTRO + BỨC THƯ
+        ===================================================== */
+
+        #questionScene {
+            position: fixed;
+            inset: 0;
+            z-index: 20;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+
+            background: #000;
+            color: white;
+
+            transition: opacity 0.8s ease;
+        }
+
+        #question {
+            margin: 0;
+            padding: 0 20px;
+
+            font-size: clamp(28px, 5vw, 60px);
+            text-align: center;
+        }
+
+        #buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        #buttons button {
+            border: 0;
+            border-radius: 999px;
+            padding: 15px 30px;
+
+            font-size: 20px;
+            font-family: inherit;
+            cursor: pointer;
+
+            transition:
+                transform 0.35s cubic-bezier(.2,.8,.2,1),
+                opacity 0.4s ease;
+        }
+
+        #yes {
+            background: #ff69b4;
+            color: white;
+            transform-origin: center;
+        }
+
+        #no {
+            background: #333;
+            color: white;
+        }
+
+        #trollMessage {
+            position: fixed;
+            inset: 0;
+            z-index: 25;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background: #000;
+            color: white;
+            font-size: clamp(30px, 5vw, 64px);
+            font-weight: bold;
+            text-align: center;
+
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(.85);
+
+            transition: opacity .5s ease, transform .5s ease;
+        }
+
+        #trollMessage.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        #letterScene {
+            position: fixed;
+            inset: 0;
+            z-index: 15;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 25px;
+
+            background: rgba(0, 0, 0, 0.96);
+
+            opacity: 0;
+            pointer-events: none;
+
+            transition: opacity 0.9s ease;
+        }
+
+        #letter {
+            width: min(88vw, 620px);
+            max-height: 82vh;
+            overflow-y: auto;
+
+            padding: 42px;
+
+            background: #fff7f9;
+            color: #333;
+
+            border-radius: 14px;
+
+            box-shadow:
+                0 20px 80px rgba(255, 105, 180, 0.25);
+
+            transform: translateY(30px) scale(0.85);
+
+            transition:
+                transform 0.9s cubic-bezier(.2,.8,.2,1);
+        }
+
+        #letterScene.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #letterScene.show #letter {
+            transform: translateY(0) scale(1);
+        }
+
+        #letter h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #e75480;
+        }
+
+        #letter p {
+            font-size: 18px;
+            line-height: 1 ;
+        }
+
+        #letterContinue {
+            display: block;
+            margin: 25px auto 0;
+
+            border: 0;
+            border-radius: 999px;
+            padding: 12px 24px;
+
+            background: #ff69b4;
+            color: white;
+
+            font-size: 16px;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+
+        /* ================================
+           ENDING CLIMAX
+        ================================= */
+
+        #endingScene {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        #endingScene.show { opacity: 1; }
+
+        #endingTitle {
+            color: white;
+            font-size: clamp(42px, 8vw, 92px);
+            font-weight: 800;
+            text-align: center;
+            margin: 0;
+            transform: scale(0.65);
+            opacity: 0;
+            text-shadow: 0 0 18px rgba(255,105,180,.75), 0 0 45px rgba(255,255,255,.35);
+        }
+
+        #endingName {
+            color: #ff9ac8;
+            font-size: clamp(28px, 5vw, 58px);
+            margin-top: 16px;
+            opacity: 0;
+            transform: translateY(18px);
+            text-shadow: 0 0 18px rgba(255,105,180,.65);
+        }
+
+        #endingWish {
+            color: rgba(255,255,255,.9);
+            font-size: clamp(16px, 2.5vw, 24px);
+            margin-top: 22px;
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        #endingScene.show #endingTitle {
+            animation: endingPop 0.9s cubic-bezier(.2,.9,.2,1) forwards;
+        }
+
+        #endingScene.show #endingName {
+            animation: endingFade 0.8s ease 0.45s forwards;
+        }
+
+        #endingScene.show #endingWish {
+            animation: endingFade 0.8s ease 1s forwards;
+        }
+
+        @keyframes endingPop {
+            0% { opacity: 0; transform: scale(.65); }
+            65% { opacity: 1; transform: scale(1.08); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes endingFade {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .confetti {
+            position: fixed;
+            top: -20px;
+            width: 6px;
+            height: 12px;
+            z-index: 11;
+            animation: confettiFall linear forwards;
+        }
+
+        @keyframes confettiFall {
+            to { transform: translate3d(var(--dx), 115vh, 0) rotate(720deg); opacity: 0; }
+        }
+
+        /* =====================================================
+           CANVAS THÁC CHỮ
+        ===================================================== */
+
+        #rain {
+            position: fixed;
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            z-index: 1;
+        }
+
+
+        /* =====================================================
+           CANVAS HẠT TẠO CHỮ
+        ===================================================== */
+
+        #particles {
+            position: fixed;
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            z-index: 5;
+
+            pointer-events: none;
+        }
+
+
+        /* =====================================================
+           TIM
+        ===================================================== */
+
+        #hearts {
+            position: fixed;
+            inset: 0;
+
+            z-index: 3;
+
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .heart {
+            position: absolute;
+            bottom: -40px;
+
+            animation:
+                heartFly linear forwards;
+        }
+
+        @keyframes heartFly {
+
+            0% {
+                transform:
+                    translateY(0)
+                    scale(0.7);
+
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            100% {
+                transform:
+                    translateY(-115vh)
+                    scale(1);
+
+                opacity: 0;
+            }
+        }
+
+
+        /* =====================================================
+           COUNTDOWN
+        ===================================================== */
+
+        #countdown {
+            position: fixed;
+            inset: 0;
+
+            z-index: 6;
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            pointer-events: none;
+
+            color: white;
+
+            font-size:
+                clamp(
+                    90px,
+                    14vw,
+                    180px
+                );
+
+            font-weight: bold;
+
+            opacity: 0;
+
+            transform: scale(0.5);
+
+            transition:
+                opacity 0.25s ease,
+                transform 0.45s cubic-bezier(.2,.8,.2,1);
+        #letterText {
+    min-height: 230px;
+
+    font-size: 18px;
+
+    line-height: 1.6;
+
+    color: #333;
+}
+
+.letter-line {
+    margin: 0 0 5px;
+
+    opacity: 0;
+
+    transform: translateY(8px);
+
+    animation:
+        letterLineIn 0.5s ease forwards;
+}
+
+@keyframes letterLineIn {
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}}
+
+    </style>
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         THÁC CHỮ
+    ===================================================== -->
+<div id="questionScene">
+
+    <h1 id="question">
+        Bà có yêu tui không? 👀
+    </h1>
+
+    <div id="buttons">
+
+        <button id="yes">
+            Có ❤️
+        </button>
+
+        <button id="no">
+            Không 😭
+        </button>
+
+    </div>
+
+</div>
+
+
+<div id="trollMessage">
+    Haha giỡn tí th :))
+</div>
+
+<div id="letterScene">
+
+    <div id="letter">
+
+        <h2>💌 Gửi bà</h2>
+
+        <div id="letterText"></div>
+
+        <button id="letterContinue">
+            Đọc xong rồi ✨
+        </button>
+
+    </div>
+
+</div>
+    <div id="endingScene">
+        <h1 id="endingTitle">HAPPY BIRTHDAY</h1>
+        <div id="endingName">KHÁNH LY ❤️</div>
+        <div id="endingWish">Chúc bà có một tuổi mới thật vui nhé ✨</div>
+    </div>
+
+    <canvas id="rain"></canvas>
+
+
+    <!-- =====================================================
+         HẠT TẠO CHỮ
+    ===================================================== -->
+
+    <canvas id="particles"></canvas>
+
+
+    <!-- =====================================================
+         TIM
+    ===================================================== -->
+
+    <div id="hearts"></div>
+
+
+    <!-- =====================================================
+         COUNTDOWN
+    ===================================================== -->
+
+    <div id="countdown"></div>
+
+
+    <script>
+
+        /* =====================================================
+           CẢNH 1
+           THÁC HAPPY BIRTHDAY
+        ===================================================== */
+
+
+        const rain =
+            document.getElementById("rain");
+
+        const rainCtx =
+            rain.getContext("2d");
+
+
+        let W =
+            window.innerWidth;
+
+        let H =
+            window.innerHeight;
+
+
+        const dpr =
+            window.devicePixelRatio || 1;
+
+
+        function resizeRain() {
+
+            W =
+                window.innerWidth;
+
+            H =
+                window.innerHeight;
+
+
+            rain.width =
+                W * dpr;
+
+            rain.height =
+                H * dpr;
+
+
+            rain.style.width =
+                W + "px";
+
+            rain.style.height =
+                H + "px";
+
+
+            rainCtx.setTransform(
+                dpr,
+                0,
+                0,
+                dpr,
+                0,
+                0
+            );
+
+
+            createRain();
+        }
+
+
+        window.addEventListener(
+            "resize",
+            resizeRain
+        );
+
+
+        const word =
+            "HAPPY BIRTHDAY";
+
+
+        /*
+            Khoảng cách giữa các cột.
+
+            Nhỏ = nhiều cột hơn.
+        */
+
+        const columnSpacing = 15;
+
+
+        const rainColumns = [];
+
+
+        function createRain() {
+
+            rainColumns.length = 0;
+
+
+            const amount =
+                Math.ceil(
+                    W /
+                    columnSpacing
+                ) + 3;
+
+
+            for (
+                let i = 0;
+                i < amount;
+                i++
+            ) {
+
+                /*
+                    Độ dài mỗi đuôi
+                    khác nhau.
+                */
+
+                const length =
+                    18 +
+                    Math.random() * 20;
+
+
+                /*
+                    Vị trí ban đầu.
+
+                    Phần lớn bắt đầu
+                    gần phía trên để
+                    tạo màn chữ dày.
+                */
+
+                const startY =
+                    -Math.random() *
+                    H *
+                    0.8
+
+
+                rainColumns.push({
+
+                    x:
+                        i *
+                        columnSpacing,
+
+                    y:
+                        startY,
+
+                    length:
+                        length,
+
+                    speed:
+                        230 +
+                        Math.random() *
+                        100,
+
+                    offset: 0, //
+                       
+                
+
+                    /*
+                        Lệch nhẹ giữa các cột,
+                        không quá random.
+                    */
+
+                    phase:
+                        Math.random()
+                });
+            }
+        }
+
+
+        resizeRain();
+
+
+        let lastTime =
+            performance.now();
+
+
+        function drawRain(time) {
+
+            const delta =
+                Math.min(
+                    (
+                        time -
+                        lastTime
+                    ) / 1000,
+
+                    0.05
+                );
+
+
+            lastTime =
+                time;
+
+
+            rainCtx.clearRect(
+                0,
+                0,
+                W,
+                H
+            );
+
+
+            rainCtx.font =
+                "13px Arial";
+
+            rainCtx.textAlign =
+                "center";
+
+            rainCtx.textBaseline =
+                "middle";
+
+
+            for (
+                const column
+                of rainColumns
+            ) {
+
+                /*
+                    Vẽ từng chữ trong đuôi.
+                */
+
+                for (
+                    let i = 0;
+                    i < column.length;
+                    i++
+                ) {
+
+                    const y =
+                        column.y +
+                        i * 15;
+
+
+                    if (
+                        y < -25 ||
+                        y > H + 25
+                    ) {
+                        continue;
+                    }
+
+
+                    /*
+                        progress:
+
+                        0 = đầu cột
+                        1 = cuối cột
+                    */
+
+                    const progress =
+                        i /
+                        column.length;
+
+
+                    /*
+                        Đầu cột rõ.
+
+                        Cuối cột mờ.
+                    */
+
+                    let opacity;
+
+
+                    if (
+                        progress < 0.45
+                    ) {
+
+                        opacity =
+                            0.68;
+
+                    } else {
+
+                        const fade =
+                            (
+                                progress -
+                                0.45
+                            ) /
+                            0.55;
+
+
+                        opacity =
+                            0.68 *
+                            (
+                                1 -
+                                fade
+                            );
+                    }
+
+
+                    opacity =
+                        Math.max(
+                            0.025,
+                            opacity
+                        );
+
+
+                    /*
+                        Màu chữ thác.
+                    */
+
+                    rainCtx.fillStyle =
+                        `rgba(
+                            205,
+                            125,
+                            155,
+                            ${opacity}
+                        )`;
+
+
+                    const index =
+                        (
+                            column.offset +
+                            i
+                        ) %
+                        word.length;
+
+
+                    rainCtx.fillText(
+                        word[index],
+                        column.x,
+                        y
+                    );
+                }
+
+
+                /*
+                    Cho cả cột chạy xuống.
+                */
+
+                column.y +=
+                    column.speed *
+                    delta;
+
+
+                /*
+                    Khi đuôi đi hết màn hình
+                    thì đưa lại phía trên.
+                */
+
+               /*
+    Khi đầu cột đi xuống hết màn hình,
+    lập tức đưa cột mới lên trên.
+    Đuôi cột cũ vẫn còn ở dưới,
+    nên dòng chữ được nối liên tục.
+*/
+
+if (column.y > H) {
+
+    column.length =
+        18 + Math.random() * 42;
+
+    column.y =
+        -column.length * 15;
+
+    column.speed =
+        230 + Math.random() * 100;
+
+    column.offset = 0 
+
+}
+            }
+
+
+            requestAnimationFrame(
+                drawRain
+            );
+        }
+
+
+        requestAnimationFrame(
+            drawRain
+        );
+
+
+
+        /* =====================================================
+           CẢNH 2
+           TIM BAY
+        ===================================================== */
+
+
+     
+       const hearts =
+            document.getElementById(
+                "hearts"
+            );
+
+
+        const HEARTS = [
+            "💝",
+            "💞",
+            "💕",
+            "❤️",
+            "🩷",
+            "🧡",
+            "💖",
+            "💗",
+            "💓",
+            "💘",
+            "💌",
+            "💟",
+            "💛",
+            "💚",
+            "💙",
+            "🖤",
+            "💜",
+        ];
+
+
+        let heartTimer =
+            null;
+
+
+        function spawnHeart() {
+
+            const heart =
+                document.createElement(
+                    "div"
+                );
+
+
+            heart.className =
+                "heart";
+
+
+            heart.textContent =
+                HEARTS[
+                    Math.floor(
+                        Math.random() *
+                        HEARTS.length
+                    )
+                ];
+
+
+            /*
+                Bay từ nhiều vị trí
+                khác nhau.
+            */
+
+            heart.style.left =
+                (
+                    2 +
+                    Math.random() *
+                    96
+                ) +
+                "%";
+
+
+            /*
+                Hơi lớn hơn bản trước.
+            */
+
+            heart.style.fontSize =
+                (
+                    13 +
+                    Math.random() *
+                    9
+                ) +
+                "px";
+
+
+            heart.style.animationDuration =
+                (
+                    2.5 +
+                    Math.random() *
+                    1.5
+                ) +
+                "s";
+
+
+            hearts.appendChild(
+                heart
+            );
+
+
+            setTimeout(
+                () => {
+                    heart.remove();
+                },
+                4500
+            );
+        }
+
+
+        /*
+            Bắt đầu sau 1.5s.
+        */
+
+        setTimeout(() => {
+
+            /*
+                Spawn liên tục.
+
+                Cứ 120ms có thêm tim.
+            */
+
+            heartTimer =
+                setInterval(
+                    spawnHeart,
+                    120
+                );
+
+
+        }, 1500);
+
+
+        /* =====================================================
+           CẢNH 3
+           COUNTDOWN
+        ===================================================== */
+
+
+        const countdown =
+            document.getElementById(
+                "countdown"
+            );
+
+
+        function showNumber(number) {
+
+            countdown.textContent =
+                number;
+
+
+            countdown.style.opacity =
+                "1";
+
+
+            countdown.style.transform =
+                "scale(1.12)";
+
+
+            setTimeout(() => {
+
+                countdown.style.transform =
+                    "scale(1)";
+
+            }, 120);
+        }
+
+
+        function hideNumber() {
+
+            countdown.style.opacity =
+                "0";
+
+
+            countdown.style.transform =
+                "scale(1.4)";
+        }
+
+
+
+        /* =====================================================
+           CẢNH 4
+           PARTICLE TEXT
+        ===================================================== */
+
+
+        const particleCanvas =
+            document.getElementById(
+                "particles"
+            );
+
+
+        const particleCtx =
+            particleCanvas.getContext(
+                "2d"
+            );
+
+
+        let PW =
+            window.innerWidth;
+
+        let PH =
+            window.innerHeight;
+
+
+        function resizeParticles() {
+
+            PW =
+                window.innerWidth;
+
+            PH =
+                window.innerHeight;
+
+
+            particleCanvas.width =
+                PW * dpr;
+
+            particleCanvas.height =
+                PH * dpr;
+
+
+            particleCanvas.style.width =
+                PW + "px";
+
+            particleCanvas.style.height =
+                PH + "px";
+
+
+            particleCtx.setTransform(
+                dpr,
+                0,
+                0,
+                dpr,
+                0,
+                0
+            );
+        }
+
+
+        resizeParticles();
+
+
+        window.addEventListener(
+            "resize",
+            resizeParticles
+        );
+
+
+        let particles = [];
+
+
+
+        /* =====================================================
+           LẤY ĐIỂM CỦA CHỮ
+        ===================================================== */
+
+
+       function getTextPoints(
+    text,
+    fontSize
+) {
+
+    const temp =
+        document.createElement("canvas");
+
+    temp.width = PW;
+    temp.height = PH;
+
+    const tempCtx =
+        temp.getContext("2d");
+
+
+    /* Vẽ emoji/chữ lên canvas */
+
+    tempCtx.font =
+        `${fontSize}px Arial`;
+
+    tempCtx.textAlign =
+        "center";
+        
+
+    tempCtx.textBaseline =
+        "middle";
+    tempCtx.fillStyle = "white";
+
+    tempCtx.fillText(
+        text,
+        PW / 2,
+        PH / 2
+    );
+
+
+    /* Lấy dữ liệu màu */
+
+    const pixels =
+        tempCtx.getImageData(
+            0,
+            0,
+            PW,
+            PH
+        );
+
+
+    const points = [];
+
+
+    /* Mật độ hạt */
+
+    const gap = 2;
+
+
+    for (
+        let y = 0;
+        y < PH;
+        y += gap
+    ) {
+
+        for (
+            let x = 0;
+            x < PW;
+            x += gap
+        ) {
+
+            const index =
+                (
+                    y * PW + x
+                ) * 4;
+
+
+            const alpha =
+                pixels.data[index + 3];
+
+
+            if (
+                alpha > 120
+            ) {
+
+                points.push({
+
+                    x: x,
+
+                    y: y,
+
+                    r:
+                        pixels.data[index],
+
+                    g:
+                        pixels.data[index + 1],
+
+                    b:
+                        pixels.data[index + 2]
+                });
+            }
+        }
+    }
+
+
+    return points;
+}
+
+
+
+        /* =====================================================
+           TẠO PARTICLE
+        ===================================================== */
+
+
+        function makeParticleText(
+            text,
+            fontSize
+        ) {
+
+            const points =
+                getTextPoints(
+                    text,
+                    fontSize
+                );
+
+
+            particles = [];
+
+
+            for (
+                const point
+                of points
+            ) {
+
+                /*
+                    Hạt bắt đầu
+                    từ vị trí ngẫu nhiên.
+                */
+
+                particles.push({
+
+                    x:
+                        PW / 2 +
+                        (Math.random() - 0.5) * PW,
+
+                    y:
+                        PH / 2 +
+                        (Math.random() - 0.5) * PH,
+
+                    targetX:
+                        point.x,
+
+                    targetY:
+                        point.y,
+
+                    r:
+                        point.r,
+
+                    g:
+                        point.g,
+
+                    b:
+                        point.b,
+
+                    size:
+                        2,
+
+                    alpha:
+                        0
+                });
+            }
+        }
+
+
+        /* =====================================================
+           ANIMATION HẠT TỤ THÀNH CHỮ
+        ===================================================== */
+
+
+        function formText(
+            text,
+            fontSize,
+            holdTime
+        ) {
+
+            return new Promise(
+                resolve => {
+
+                    makeParticleText(
+                        text,
+                        fontSize
+                    );
+
+
+                    const start =
+                        performance.now();
+
+
+                    function animateIn(
+                        now
+                    ) {
+
+                        const elapsed =
+                            (
+                                now -
+                                start
+                            ) / 1000;
+
+
+                        /*
+                            0 → 1
+                        */
+
+                        const progress =
+                            Math.min(
+                                1,
+                                elapsed /
+                                1.1
+                            );
+
+
+                        /*
+                            Easing mượt.
+                        */
+
+                        const ease =
+                            1 -
+                            Math.pow(
+                                1 -
+                                progress,
+                                3
+                            );
+
+
+                        particleCtx.clearRect(
+                            0,
+                            0,
+                            PW,
+                            PH
+                        );
+
+
+                        for (
+                            const p
+                            of particles
+                        ) {
+
+                            p.x +=
+                                (
+                                    p.targetX -
+                                    p.x
+                                ) *
+                                (
+                                    0.045 +
+                                    ease *
+                                    0.035
+                                );
+
+
+                            p.y +=
+                                (
+                                    p.targetY -
+                                    p.y
+                                ) *
+                                (
+                                    0.045 +
+                                    ease *
+                                    0.035
+                                );
+
+
+                            p.alpha =
+                                Math.min(
+                                    1,
+                                    p.alpha +
+                                    0.045
+                                );
+
+
+                            /*
+                                Hạt trắng sáng.
+                            */
+
+                            particleCtx.fillStyle =
+                                `rgba(
+                                    ${p.r},
+                                    ${p.g},
+                                    ${p.b},
+                                    ${p.alpha}
+                                )`;
+
+                            particleCtx.beginPath();
+
+
+                            particleCtx.arc(
+                                p.x,
+                                p.y,
+                                p.size,
+                                0,
+                                Math.PI * 2
+                            );
+
+
+                            particleCtx.fill();
+                        }
+
+
+                        if (
+                            progress < 1
+                        ) {
+
+                            requestAnimationFrame(
+                                animateIn
+                            );
+
+                        } else {
+
+                            /*
+                                Giữ chữ một lúc.
+                            */
+
+                            setTimeout(
+                                () => {
+
+                                    dissolveText(
+                                        resolve
+                                    );
+
+                                },
+                                holdTime
+                            );
+                        }
+                    }
+
+
+                    requestAnimationFrame(
+                        animateIn
+                    );
+                }
+            );
+        }
+
+
+
+        /* =====================================================
+           HẠT TAN RA
+        ===================================================== */
+
+
+        function dissolveText(
+            resolve
+        ) {
+
+            const start =
+                performance.now();
+
+
+            /*
+                Mỗi hạt có hướng
+                bay riêng.
+            */
+
+            const velocities =
+                particles.map(() => ({
+
+                    x:
+                        (
+                            Math.random() -
+                            0.5
+                        ) *
+                        2.5,
+
+                    y:
+                        (
+                            Math.random() -
+                            0.5
+                        ) *
+                        2.5
+                }));
+
+
+            function animateOut(
+                now
+            ) {
+
+                const progress =
+                    Math.min(
+                        1,
+                        (
+                            now -
+                            start
+                        ) /
+                        900
+                    );
+
+
+                particleCtx.clearRect(
+                    0,
+                    0,
+                    PW,
+                    PH
+                );
+
+
+                for (
+                    let i = 0;
+                    i < particles.length;
+                    i++
+                ) {
+
+                    const p =
+                        particles[i];
+
+                    const v =
+                        velocities[i];
+
+
+                    p.x +=
+                        v.x;
+
+                    p.y +=
+                        v.y;
+
+
+                    v.y +=
+                        0.015;
+
+
+                    p.alpha =
+                        1 -
+                        progress;
+
+
+                    particleCtx.fillStyle =
+                        `rgba(
+                            ${p.r},
+                            ${p.g},
+                            ${p.b},
+                            ${p.alpha}
+                        )`;
+
+
+                    particleCtx.beginPath();
+
+
+                    particleCtx.arc(
+                        p.x,
+                        p.y,
+                        p.size,
+                        0,
+                        Math.PI * 2
+                    );
+
+
+                    particleCtx.fill();
+                }
+
+
+                if (
+                    progress < 1
+                ) {
+
+                    requestAnimationFrame(
+                        animateOut
+                    );
+
+                } else {
+
+                    particleCtx.clearRect(
+                        0,
+                        0,
+                        PW,
+                        PH
+                    );
+
+
+                    resolve();
+                }
+            }
+
+
+            requestAnimationFrame(
+                animateOut
+            );
+        }
+
+
+
+        /* =====================================================
+           INTRO → THƯ → CHUYỂN CẢNH
+        ===================================================== */
+
+        const questionScene =
+            document.getElementById("questionScene");
+
+        const question =
+            document.getElementById("question");
+
+        const yesButton =
+            document.getElementById("yes");
+
+        const noButton =
+            document.getElementById("no");
+
+        const letterScene =
+            document.getElementById("letterScene");
+
+        let noCount = 0;
+        let yesScale = 1;
+        const letterText =
+    document.getElementById(
+        "letterText"
+    );
+
+
+const letterLines = [
+
+    "Nè Ly, tui có một điều muốn nói...",
+    "Hôm nay là sinh nhật của Ly, tui muốn gửi lời chúc mừng đến Ly.",
+    "Chúc Ly có một tuổi mới thật vui vẻ, hạnh phúc và luôn khỏe mạnh nhé!",
+    "Đồng thời chúc Ly luôn gặp may mắn trong cuộc sống và đạt được những điều mà Ly mong muốn.",
+    "Cuối cùng cảm ơn Ly đã luôn ở bên cạnh và ủng hộ tui trong mọi chuyện. Ly là người quan trọng nhất trong cuộc đời tui.",    
+
+];
+
+
+function wait(ms) {
+
+    return new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                ms
+            )
+    );
+}
+
+
+async function typeLetter() {
+
+    /*
+        Xóa nội dung cũ
+    */
+
+    letterText.innerHTML = "";
+
+
+    /*
+        Gõ từng dòng
+    */
+
+    for (
+        const text of letterLines
+    ) {
+
+        const line =
+            document.createElement(
+                "p"
+            );
+
+
+        line.className =
+            "letter-line";
+
+
+        letterText.appendChild(
+            line
+        );
+
+
+        /*
+            Gõ từng chữ
+        */
+
+        for (
+            let i = 0;
+            i < text.length;
+            i++
+        ) {
+
+            line.textContent +=
+                text[i];
+
+            await wait(35);
+        }
+
+
+        /*
+            Nghỉ giữa các dòng
+        */
+
+        await wait(350);
+    }
+}
+
+        let rainStarted = false;
+
+
+        /* -----------------------------------------------------
+           BẤM KHÔNG
+        ----------------------------------------------------- */
+
+        noButton.addEventListener("click", () => {
+
+            noCount++;
+
+            /*
+                CÓ to dần sau mỗi lần bấm KHÔNG.
+            */
+            yesScale += 0.18;
+
+            yesButton.style.transform =
+                `scale(${yesScale})`;
+
+            /*
+                KHÔNG nhỏ dần nhưng vẫn bấm được.
+            */
+            const noScale =
+                Math.max(
+                    0.35,
+                    1 - noCount * 0.08
+                );
+
+            noButton.style.transform =
+                `scale(${noScale})`;
+
+
+            if (noCount === 1) {
+
+                question.textContent =
+                    "Bà chắc chưa? 👀";
+
+            } else if (noCount === 2) {
+
+                question.textContent =
+                    "Suy nghĩ lại đi mà 🥺";
+
+            } else if (noCount === 3) {
+
+                question.textContent =
+                    "Không được chọn vậy đâu 😭";
+
+            } else if (noCount === 4) {
+
+                question.textContent =
+                    "Bà đang thử tui đúng không? :))";
+
+            } else {
+
+                question.textContent =
+                    "Chọn lại đi 😭❤️";
+            }
+        });
+
+
+        /* -----------------------------------------------------
+           TIM BAY LIÊN TỤC
+        ----------------------------------------------------- */
+
+        function startHearts() {
+
+            if (heartTimer) return;
+
+            heartTimer =
+                setInterval(
+                    spawnHeart,
+                    120
+                );
+
+            /*
+                Cho có tim ngay khi bắt đầu.
+            */
+            for (let i = 0; i < 8; i++) {
+                setTimeout(
+                    spawnHeart,
+                    i * 90
+                );
+            }
+        }
+
+
+        /* -----------------------------------------------------
+           COUNTDOWN
+        ----------------------------------------------------- */
+
+        function startCountdown() {
+
+            setTimeout(() => {
+
+                showNumber("3");
+
+                setTimeout(() => {
+
+                    showNumber("2");
+
+                    setTimeout(() => {
+
+                        showNumber("1");
+
+                        setTimeout(() => {
+
+                            hideNumber();
+
+                            startFinalScene();
+
+                        }, 900);
+
+                    }, 1000);
+
+                }, 1000);
+
+            }, 4500);
+        }
+
+
+        /* -----------------------------------------------------
+           BẮT ĐẦU THÁC SAU KHI THƯ TAN
+        ----------------------------------------------------- */
+
+        function startBirthdayScene() {
+
+            if (rainStarted) return;
+
+            rainStarted = true;
+
+            startHearts();
+
+            startCountdown();
+        }
+
+
+        /* -----------------------------------------------------
+           CHO THƯ TAN DẦN RỒI MỚI VÀO THÁC
+        ----------------------------------------------------- */
+
+        function dissolveLetter() {
+
+            letterScene.style.opacity = "0";
+            letterScene.style.pointerEvents = "none";
+
+            setTimeout(() => {
+
+                startBirthdayScene();
+
+            }, 900);
+        }
+
+
+        /* -----------------------------------------------------
+           BẤM CÓ
+        ----------------------------------------------------- */
+
+        const trollMessage =
+            document.getElementById("trollMessage");
+
+
+        yesButton.addEventListener("click", () => {
+
+            questionScene.style.opacity = "0";
+            questionScene.style.pointerEvents = "none";
+
+            /*
+                Troll riêng, KHÔNG nằm trong bức thư.
+            */
+            setTimeout(() => {
+
+                trollMessage.classList.add("show");
+
+                setTimeout(() => {
+
+                    trollMessage.classList.remove("show");
+
+                    setTimeout(() => {
+
+                    letterScene.classList.add(
+        "show"
+    );
+
+                    typeLetter();
+
+                    }, 700);
+
+                }, 500);
+
+            }, 700);
+        });
+
+
+        /*
+            Nhấn vào bức thư để tiếp tục.
+
+            Sau này bro có thể đổi thành
+            một nút "Đọc xong rồi ✨".
+        */
+        const letterContinue =
+            document.getElementById("letterContinue");
+
+        letterContinue.addEventListener(
+            "click",
+            (event) => {
+
+                event.stopPropagation();
+
+                dissolveLetter();
+            }
+        );
+
+        /* =====================================================
+           CHỮ CUỐI
+        ===================================================== */
+
+
+        async function startFinalScene() {
+
+            /*
+                Dòng 1
+            */
+
+            await formText(
+                "HAPPY BIRTHDAY TO",
+                62,
+                700
+            );
+
+
+            /*
+                Dòng 2
+                ĐỔI TÊN Ở ĐÂY
+            */
+
+            await formText(
+                "KHÁNH LY ✿",
+                76,
+                700
+            );
+
+
+            /*
+                Dòng 3
+            */
+
+            await formText(
+                "27.09",
+                70,
+                700
+            );
+
+
+            /*
+                Dòng 4
+                ĐỔI TUỔI Ở ĐÂY
+            */
+
+            await formText(
+                "15+",
+                90,
+                1300
+            );
+            await formText(
+                "🎊🎉🎂🎉🎊",
+                90,
+                1000
+            );
+
+            await startEndingClimax();
+        }
+
+
+        /* =====================================================
+           ENDING CLIMAX
+        ===================================================== */
+
+        function spawnConfetti() {
+
+            for (let i = 0; i < 75; i++) {
+
+                const piece = document.createElement("div");
+                piece.className = "confetti";
+
+                const palette = [
+                    "#ff69b4",
+                    "#ffd166",
+                    "#ffffff",
+                    "#8bd3ff",
+                    "#c8ff9e"
+                ];
+
+                piece.style.background =
+                    palette[Math.floor(Math.random() * palette.length)];
+
+                piece.style.left =
+                    Math.random() * 100 + "vw";
+
+                piece.style.setProperty(
+                    "--dx",
+                    (Math.random() * 220 - 110) + "px"
+                );
+
+                piece.style.animationDuration =
+                    (2.2 + Math.random() * 2) + "s";
+
+                document.body.appendChild(piece);
+
+                setTimeout(() => piece.remove(), 4500);
+            }
+        }
+
+
+        async function startEndingClimax() {
+
+            const ending =
+                document.getElementById("endingScene");
+
+            ending.classList.add("show");
+
+            /* Burst confetti */
+            spawnConfetti();
+
+            /* Một burst tim nhỏ ở cao trào */
+            for (let i = 0; i < 18; i++) {
+                setTimeout(spawnHeart, i * 90);
+            }
+        }
+
+        main();
+
+    </script>
+
+</body>
+</html>
